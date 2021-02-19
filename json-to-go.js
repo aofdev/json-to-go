@@ -6,8 +6,7 @@
 
 	A simple utility to translate JSON into a Go type definition.
 */
-
-function jsonToGo(json, typename, flatten = true)
+function jsonToGo(json, typename, flatten = true, bson = true)
 {
 	let data;
 	let scope;
@@ -194,7 +193,11 @@ function jsonToGo(json, typename, flatten = true)
 				appender(typename+" ");
 				parent = typename
 				parseScope(scope[keys[i]], depth);
-				appender(' `json:"'+keyname);
+				if (bson) {
+					appender(' `json:"'+keyname+'" bson:"'+keyname);
+				} else {
+					appender(' `json:"'+keyname);
+				}
 				if (omitempty && omitempty[keys[i]] === true)
 				{
 					appender(',omitempty');
@@ -217,7 +220,11 @@ function jsonToGo(json, typename, flatten = true)
 				append(typename+" ");
 				parent = typename
 				parseScope(scope[keys[i]], depth);
-				append(' `json:"'+keyname);
+				if (bson) {
+					append(' `json:"'+keyname+'" bson:"'+keyname);
+				} else {
+					append(' `json:"'+keyname);
+				}
 				if (omitempty && omitempty[keys[i]] === true)
 				{
 					append(',omitempty');
@@ -396,24 +403,29 @@ function jsonToGo(json, typename, flatten = true)
 	}
 }
 
-if (typeof module != 'undefined') {
-    if (!module.parent) {
-        if (process.argv.length > 2 && process.argv[2] === '-big') {
-            bufs = []
-            process.stdin.on('data', function(buf) {
-                bufs.push(buf)
-            })
-            process.stdin.on('end', function() {
-                const json = Buffer.concat(bufs).toString('utf8')
-                console.log(jsonToGo(json).go)
-            })
-        } else {
-            process.stdin.on('data', function(buf) {
-                const json = buf.toString('utf8')
-                console.log(jsonToGo(json).go)
-            })
-        }
-    } else {
-        module.exports = jsonToGo
-    }
-}
+// if (typeof module != 'undefined') {
+//     if (!module.parent) {
+//         if (process.argv.length > 2 && process.argv[2] === '-big') {
+//             bufs = []
+//             process.stdin.on('data', function(buf) {
+//                 bufs.push(buf)
+//             })
+//             process.stdin.on('end', function() {
+//                 const json = Buffer.concat(bufs).toString('utf8')
+//                 console.log(jsonToGo(json).go)
+//             })
+//         } else {
+//             process.stdin.on('data', function(buf) {
+//                 const json = buf.toString('utf8')
+//                 console.log(jsonToGo(json).go)
+//             })
+//         }
+//     } else {
+//         module.exports = jsonToGo
+//     }
+// }
+
+
+// Example use local
+const json = (require('fs').readFileSync("./sample.json")).toString('utf8');
+console.log(jsonToGo(json).go)
